@@ -1,4 +1,4 @@
-import { type Session, useSupabaseClient } from '@supabase/auth-helpers-react'
+import { useSupabaseClient } from '@supabase/auth-helpers-react'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -21,12 +21,6 @@ export const Login = () => {
         })
     }
 
-    // const appleSignIn = async () => {
-    //     await supabase.auth.signInWithOAuth({
-    //         provider: 'apple'
-    //     })
-    // }
-
     const azureSignIn = async () => {
         await supabase.auth.signInWithOAuth({
             provider: 'azure',
@@ -35,23 +29,6 @@ export const Login = () => {
             }
         })
     }
-
-    supabase.auth.onAuthStateChange((event) => {
-        const sessionFromLocalStorage = localStorage.getItem(
-            'sb-nurjqsmfemjxyvfpaiao-auth-token'
-        )
-
-        const user = JSON.parse(sessionFromLocalStorage || '{}') as Session
-
-        if (event === 'SIGNED_OUT' && user?.refresh_token) {
-            supabase.auth.refreshSession({
-                refresh_token: user?.refresh_token!
-            })
-            supabase.auth.startAutoRefresh()
-        } else {
-            supabase.auth.stopAutoRefresh()
-        }
-    })
 
     return (
         <Card className='fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 max-w-sm'>

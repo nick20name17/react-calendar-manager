@@ -14,7 +14,8 @@ import {
     AlertDialogTrigger
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
-import { useRemoveEventMutation } from '@/store/api/google'
+import { useRemoveGoogleEventMutation } from '@/store/api/google'
+import { useRemoveOutlookEventMutation } from '@/store/api/outlook'
 import type { EventItem } from '@/types/google-events'
 
 interface RemoveEventModalProps {
@@ -22,13 +23,14 @@ interface RemoveEventModalProps {
 }
 
 export const RemoveEventModal: React.FC<RemoveEventModalProps> = ({ event }) => {
-    const [removeEvent] = useRemoveEventMutation()
+    const [removeGoogleEvent] = useRemoveGoogleEventMutation()
+    const [removeOutlookEvent] = useRemoveOutlookEventMutation()
 
     const session = useSession()
 
-    const deleteEvent = async () => {
+    const handleRemoveGoogleEvent = async () => {
         try {
-            await removeEvent({
+            await removeGoogleEvent({
                 eventId: event.id,
                 calendarId: session?.user?.email!
             })
@@ -38,6 +40,26 @@ export const RemoveEventModal: React.FC<RemoveEventModalProps> = ({ event }) => 
                 })
         } catch (error) {
             console.error(error)
+        }
+    }
+
+    const handleRemoveOutlookEvent = async () => {
+        try {
+            await removeOutlookEvent(event.id)
+                .unwrap()
+                .then(() => {
+                    toast.success('Event deleted successfully')
+                })
+        } catch (error) {
+            console.error(error)
+        }
+    }
+
+    const handleRemove = () => {
+        if (event.originLinks.google) {
+            handleRemoveGoogleEvent()
+        } else if (event.originLinks.google) {
+            handleRemoveOutlookEvent()
         }
     }
 
@@ -65,7 +87,7 @@ export const RemoveEventModal: React.FC<RemoveEventModalProps> = ({ event }) => 
                             variant='destructive'
                             onClick={(e) => {
                                 e.stopPropagation()
-                                deleteEvent()
+                                handleRemove()
                             }}>
                             Delete event
                         </Button>

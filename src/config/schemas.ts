@@ -1,4 +1,4 @@
-import { number, object, string } from 'zod'
+import { boolean, number, object, string } from 'zod'
 
 const invalidTypeError = 'Invalid type provided for this field'
 const requiredError = 'This field cannot be blank'
@@ -48,8 +48,10 @@ export const eventSchema = object({
     summary: string(),
     description: string().optional(),
     start: calendarSchema,
-    end: calendarSchema
+    end: calendarSchema,
+    isGoogleProvider: boolean().optional(),
+    isOutlookProvider: boolean().optional()
     // providers: array(string()).refine((value) => value.some((item) => item), {
-    //     message: 'You have to select at least one item.'
+    //     message: 'You have to select at least one provider.'
     // })
 })

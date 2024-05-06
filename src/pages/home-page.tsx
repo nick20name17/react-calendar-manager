@@ -10,7 +10,14 @@ const HomePage = () => {
 
     if (isLoading) return
 
-    return session ? <Calendar /> : <Login />
+    return session ? (
+        <>
+            {/* <Login /> */}
+            <Calendar />
+        </>
+    ) : (
+        <Login />
+    )
 }
 
 export default HomePage

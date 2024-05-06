@@ -1,5 +1,9 @@
 export interface OutlookEventResponse {
     '@odata.context': string
+    value: OutlookEventItem[]
+}
+
+export interface OutlookEventItem {
     '@odata.etag': string
     id: string
     createdDateTime: string
@@ -43,6 +47,19 @@ export interface OutlookEventResponse {
 }
 
 export interface OutlookEventItemToAdd {
+    subject: string
+    body: Body
+    start: Start
+    end: End
+    location?: {
+        displayName: string
+    }
+    attendees?: Attendees[]
+    transactionId?: string
+}
+
+export interface OutlookEventItemToPatch {
+    id: string
     subject: string
     body: Body
     start: Start

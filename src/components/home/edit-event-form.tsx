@@ -3,6 +3,7 @@ import { CalendarDateTime } from '@internationalized/date'
 import { useSession } from '@supabase/auth-helpers-react'
 import { format } from 'date-fns'
 import { useForm } from 'react-hook-form'
+import { Link } from 'react-router-dom'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
@@ -19,8 +20,14 @@ import {
     FormLabel,
     FormMessage
 } from '@/components/ui/form'
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger
+} from '@/components/ui/tooltip'
 import { calendarSchema, eventSchema } from '@/config/schemas'
-import { usePatchEventMutation } from '@/store/api/google'
+import { usePatchGoogleEventMutation } from '@/store/api/google'
 import type { EventItem, EventItemToAdd } from '@/types/google-events'
 
 export type EventData = z.infer<typeof eventSchema>
@@ -56,7 +63,7 @@ export const EditEventForm: React.FC<EventFormProps> = ({ setOpen, ...event }) =
         }
     })
 
-    const [addEvent] = usePatchEventMutation()
+    const [addEvent] = usePatchGoogleEventMutation()
 
     const createEvent = async (event: EventItemToAdd) => {
         try {
@@ -242,6 +249,48 @@ export const EditEventForm: React.FC<EventFormProps> = ({ setOpen, ...event }) =
                     <RemoveEventModal event={event} />
                 </div>
             </form>
+            <div>
+                <TooltipProvider>
+                    <div className='flex items-center gap-x-4'>
+                        <Tooltip>
+                            <TooltipTrigger>
+                                <Button
+                                    disabled={!event.originLinks?.outlook}
+                                    size='icon'>
+                                    <Link
+                                        to={event.originLinks?.outlook!}
+                                        target='_blank'>
+                                        Out
+                                    </Link>
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>
+                                    {!event.originLinks?.outlook
+                                        ? 'This event was not created in Outlook'
+                                        : 'View the event in Outlook'}
+                                </p>
+                            </TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                            <TooltipTrigger>
+                                <Button disabled={!event.originLinks?.google} size='icon'>
+                                    <Link to={event.originLinks?.google!} target='_blank'>
+                                        Goo
+                                    </Link>
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>
+                                    {!event.originLinks?.google
+                                        ? 'This event was not created in Google Calendar'
+                                        : 'View the event in Google Calendar'}
+                                </p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </div>
+                </TooltipProvider>
+            </div>
         </Form>
     )
 }

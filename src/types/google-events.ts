@@ -22,6 +22,11 @@ export interface EventItem {
     start: string
     end: string
     description?: string
+    originLinks: {
+        outlook?: string
+        google?: string
+        apple?: string
+    }
 }
 
 export interface EventItemToAdd {

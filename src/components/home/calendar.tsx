@@ -1,4 +1,4 @@
-import { useSession } from '@supabase/auth-helpers-react'
+import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react'
 import {
     add,
     eachDayOfInterval,
@@ -10,25 +10,45 @@ import {
     startOfWeek
 } from 'date-fns'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { CalendarDay } from './calendar-day'
 import { Button } from '@/components/ui/button'
-import { useGetEventsQuery } from '@/store/api/google'
+import { useGetGoogleEventsQuery } from '@/store/api/google'
+import { useGetOutlookEventsQuery } from '@/store/api/outlook'
 import type { EventItem } from '@/types/google-events'
 
 export const Calendar = () => {
     const session = useSession()
-    const { data } = useGetEventsQuery(session?.user?.email!)
+    const { data: googleEvents } = useGetGoogleEventsQuery(session?.user?.email!)
 
-    const eventItems =
-        data?.items?.map((event) => {
+    const { data: outlookEvents } = useGetOutlookEventsQuery()
+
+    const outlookEventItems =
+        outlookEvents?.value?.map((event) => {
+            return {
+                id: event.id,
+                title: event.subject,
+                start: event.start.dateTime,
+                end: event.end.dateTime,
+                description: event.body.content,
+                originLinks: {
+                    outlook: event.webLink
+                }
+            }
+        }) ?? []
+
+    const googleEventItems =
+        googleEvents?.items?.map((event) => {
             return {
                 id: event.id,
                 title: event.summary,
                 start: event.start.dateTime,
                 end: event.end.dateTime,
-                description: event.description
+                description: event.description,
+                originLinks: {
+                    google: event.htmlLink
+                }
             }
         }) ?? []
 
@@ -78,7 +98,7 @@ export const Calendar = () => {
             <div className='!w-full overflow-x-auto'>
                 <Weeks />
                 <Body
-                    events={eventItems}
+                    events={[...googleEventItems, ...outlookEventItems]}
                     currentDays={getCurrentMonthDays()}
                     firstDayCurrentMonth={firstDayCurrentMonth}
                 />

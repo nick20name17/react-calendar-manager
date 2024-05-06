@@ -10,12 +10,12 @@ import type {
 
 export const google = api.injectEndpoints({
     endpoints: (build) => ({
-        getEvents: build.query<EventResponse, string>({
+        getGoogleEvents: build.query<EventResponse, string>({
             query: (calendarId) =>
                 `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events`,
             providesTags: ['GoogleEvents']
         }),
-        addEvent: build.mutation<SingleEventResponse, EventItemToAdd>({
+        addGoogleEvent: build.mutation<SingleEventResponse, EventItemToAdd>({
             query: (body) => ({
                 url: 'https://www.googleapis.com/calendar/v3/calendars/primary/events',
                 method: 'POST',
@@ -23,7 +23,7 @@ export const google = api.injectEndpoints({
             }),
             invalidatesTags: ['GoogleEvents']
         }),
-        patchEvent: build.mutation<SingleEventResponse, EventItemToPatch>({
+        patchGoogleEvent: build.mutation<SingleEventResponse, EventItemToPatch>({
             query: ({ eventId, calendarId, ...body }) => ({
                 url: `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events/${eventId}`,
                 method: 'PATCH',
@@ -31,7 +31,7 @@ export const google = api.injectEndpoints({
             }),
             invalidatesTags: ['GoogleEvents']
         }),
-        removeEvent: build.mutation<void, EventDataToRemove>({
+        removeGoogleEvent: build.mutation<void, EventDataToRemove>({
             query: ({ eventId, calendarId }) => ({
                 url: `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events/${eventId}`,
                 method: 'DELETE'
@@ -42,8 +42,8 @@ export const google = api.injectEndpoints({
 })
 
 export const {
-    useGetEventsQuery,
-    useAddEventMutation,
-    usePatchEventMutation,
-    useRemoveEventMutation
+    useGetGoogleEventsQuery,
+    useAddGoogleEventMutation,
+    usePatchGoogleEventMutation,
+    useRemoveGoogleEventMutation
 } = google
