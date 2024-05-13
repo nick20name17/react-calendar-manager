@@ -1,6 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { CalendarDateTime } from '@internationalized/date'
-import { useSession } from '@supabase/auth-helpers-react'
 import { format } from 'date-fns'
 import { useForm } from 'react-hook-form'
 import { Link } from 'react-router-dom'
@@ -37,9 +36,13 @@ interface EventFormProps extends EventItem {
     setOpen: React.Dispatch<React.SetStateAction<boolean>>
 }
 export const EditEventForm: React.FC<EventFormProps> = ({ setOpen, ...event }) => {
-    const session = useSession()
-
     const { start, title, end, description, id } = event
+
+    console.log(event)
+
+    const sessionFromLocalStorage = localStorage.getItem('accessGoogleToken')
+
+    const { user } = JSON.parse(sessionFromLocalStorage || '{}') as any
 
     const form = useForm<EventData>({
         resolver: zodResolver(eventSchema),
@@ -65,11 +68,11 @@ export const EditEventForm: React.FC<EventFormProps> = ({ setOpen, ...event }) =
 
     const [addEvent] = usePatchGoogleEventMutation()
 
-    const createEvent = async (event: EventItemToAdd) => {
+    const editEvent = async (event: EventItemToAdd) => {
         try {
             await addEvent({
                 eventId: id,
-                calendarId: session?.user?.email!,
+                calendarId: user?.email!,
                 ...event
             })
                 .unwrap()
@@ -106,7 +109,7 @@ export const EditEventForm: React.FC<EventFormProps> = ({ setOpen, ...event }) =
             }
         }
 
-        createEvent(event)
+        editEvent(event)
     }
 
     // const providers = [

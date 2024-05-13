@@ -1,4 +1,4 @@
-import { api } from '.'
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 
 import type {
     OutlookEventItem,
@@ -7,13 +7,28 @@ import type {
     OutlookEventResponse
 } from '@/types/outlook-events'
 
-export const google = api.injectEndpoints({
+const baseQuery = fetchBaseQuery({
+    prepareHeaders: (headers) => {
+        const sessionFromLocalStorage = localStorage.getItem('accessOutlookToken')
+
+        const session = JSON.parse(sessionFromLocalStorage || '{}')
+
+        if (session?.accessToken && session?.accessToken !== null) {
+            headers.set('authorization', `Bearer ${session?.accessToken}`)
+        }
+        return headers
+    }
+})
+
+export const outlookApi = createApi({
+    reducerPath: 'outlookApi',
+    baseQuery,
     endpoints: (build) => ({
         getOutlookEvents: build.query<OutlookEventResponse, void>({
             query: () => `https://graph.microsoft.com/v1.0/me/calendar/events/`,
             providesTags: ['OutlookEvents']
         }),
-        addOutlookvent: build.mutation<OutlookEventItem, OutlookEventItemToAdd>({
+        addOutlookEvent: build.mutation<OutlookEventItem, OutlookEventItemToAdd>({
             query: (body) => ({
                 url: 'https://graph.microsoft.com/v1.0/me/calendar/events/',
                 method: 'POST',
@@ -36,12 +51,13 @@ export const google = api.injectEndpoints({
             }),
             invalidatesTags: ['OutlookEvents']
         })
-    })
+    }),
+    tagTypes: ['OutlookEvents']
 })
 
 export const {
     useGetOutlookEventsQuery,
+    useAddOutlookEventMutation,
     usePatchOutlookEventMutation,
-    useAddOutlookventMutation,
     useRemoveOutlookEventMutation
-} = google
+} = outlookApi

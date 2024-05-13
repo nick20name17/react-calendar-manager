@@ -20,8 +20,7 @@ import {
 } from '@/components/ui/form'
 import { calendarSchema, eventSchema } from '@/config/schemas'
 import { useAddGoogleEventMutation } from '@/store/api/google'
-// import { useAddGoogleEventMutation } from '@/store/api/google'
-import { useAddOutlookventMutation } from '@/store/api/outlook'
+import { useAddOutlookEventMutation } from '@/store/api/outlook'
 import type { EventItemToAdd } from '@/types/google-events'
 
 export type EventData = z.infer<typeof eventSchema>
@@ -45,8 +44,7 @@ export const CreateEventForm: React.FC<EventFormProps> = ({ date, setOpen }) => 
         }
     })
 
-    // const [addEvent] = useAddGoogleEventMutation()
-    const [addOutlookEvent] = useAddOutlookventMutation()
+    const [addOutlookEvent] = useAddOutlookEventMutation()
     const [addGoogleEvent] = useAddGoogleEventMutation()
 
     const createOutlookEvent = async (event: EventItemToAdd) => {
@@ -71,9 +69,12 @@ export const CreateEventForm: React.FC<EventFormProps> = ({ date, setOpen }) => 
                 .unwrap()
                 .then((data) => {
                     setOpen(false)
-                    toast.success(`Event ${data.subject} created successfully`, {
-                        description: `Event starts at ${format(data.start.dateTime, 'dd.MM.yyyy HH:mm')}, ends at ${format(data.end.dateTime, 'dd.MM.yyyy HH:mm')}`
-                    })
+                    toast.success(
+                        `Event ${data.subject} in Outlook created successfully`,
+                        {
+                            description: `Event starts at ${format(data.start.dateTime, 'dd.MM.yyyy HH:mm')}, ends at ${format(data.end.dateTime, 'dd.MM.yyyy HH:mm')}`
+                        }
+                    )
                 })
         } catch (error) {}
     }
@@ -84,9 +85,12 @@ export const CreateEventForm: React.FC<EventFormProps> = ({ date, setOpen }) => 
                 .unwrap()
                 .then((data) => {
                     setOpen(false)
-                    toast.success(`Event ${data.summary} created successfully`, {
-                        description: `Event starts at ${format(data.start.dateTime, 'dd.MM.yyyy HH:mm')}, ends at ${format(data.end.dateTime, 'dd.MM.yyyy HH:mm')}`
-                    })
+                    toast.success(
+                        `Event ${data.summary} in Google Calendar created successfully`,
+                        {
+                            description: `Event starts at ${format(data.start.dateTime, 'dd.MM.yyyy HH:mm')}, ends at ${format(data.end.dateTime, 'dd.MM.yyyy HH:mm')}`
+                        }
+                    )
                 })
         } catch (error) {}
     }
@@ -124,10 +128,6 @@ export const CreateEventForm: React.FC<EventFormProps> = ({ date, setOpen }) => 
         {
             id: 'google',
             label: 'Google'
-        },
-        {
-            id: 'apple',
-            label: 'Apple'
         },
         {
             id: 'microsoft',

@@ -1,4 +1,3 @@
-import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react'
 import {
     add,
     eachDayOfInterval,
@@ -10,7 +9,7 @@ import {
     startOfWeek
 } from 'date-fns'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import { CalendarDay } from './calendar-day'
 import { Button } from '@/components/ui/button'
@@ -19,8 +18,11 @@ import { useGetOutlookEventsQuery } from '@/store/api/outlook'
 import type { EventItem } from '@/types/google-events'
 
 export const Calendar = () => {
-    const session = useSession()
-    const { data: googleEvents } = useGetGoogleEventsQuery(session?.user?.email!)
+    const sessionFromLocalStorage = localStorage.getItem('accessGoogleToken')
+
+    const { user } = JSON.parse(sessionFromLocalStorage || '{}') as any
+
+    const { data: googleEvents } = useGetGoogleEventsQuery(user?.email!)
 
     const { data: outlookEvents } = useGetOutlookEventsQuery()
 
@@ -98,7 +100,7 @@ export const Calendar = () => {
             <div className='!w-full overflow-x-auto'>
                 <Weeks />
                 <Body
-                    events={[...googleEventItems, ...outlookEventItems]}
+                    events={[...outlookEventItems, ...googleEventItems]}
                     currentDays={getCurrentMonthDays()}
                     firstDayCurrentMonth={firstDayCurrentMonth}
                 />

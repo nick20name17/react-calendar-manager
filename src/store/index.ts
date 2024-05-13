@@ -1,12 +1,15 @@
 import { configureStore } from '@reduxjs/toolkit'
 
-import { api } from './api'
+import { googleApi } from './api/google'
+import { outlookApi } from './api/outlook'
 
 export const store = configureStore({
     reducer: {
-        [api.reducerPath]: api.reducer
+        [outlookApi.reducerPath]: outlookApi.reducer,
+        [googleApi.reducerPath]: googleApi.reducer
     },
-    middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(api.middleware)
+    middleware: (getDefaultMiddleware) =>
+        getDefaultMiddleware().concat(outlookApi.middleware).concat(googleApi.middleware)
 })
 
 export type RootState = ReturnType<typeof store.getState>

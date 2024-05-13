@@ -1,7 +1,7 @@
-import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react'
+import { useNavigate } from 'react-router-dom'
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Button } from '@/components/ui/button'
+import { Button } from '../ui/button'
+
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -10,13 +10,16 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
+import { UserAuth } from '@/providers/auth-context'
 
 export const UserMenu = () => {
-    const session = useSession()
-    const supabase = useSupabaseClient()
+    const { logOut } = UserAuth()!
+    const navigate = useNavigate()
 
-    const signOut = async () => {
-        await supabase.auth.signOut()
+    const handleSignOut = () => {
+        localStorage.clear()
+        logOut()
+        navigate('/login')
     }
 
     return (
@@ -26,7 +29,7 @@ export const UserMenu = () => {
                     className='overflow-hidden rounded-full'
                     size='icon'
                     variant='outline'>
-                    <Avatar>
+                    {/* <Avatar>
                         <AvatarImage
                             alt={session?.user?.email || 'User'}
                             className='overflow-hidden rounded-full'
@@ -41,7 +44,8 @@ export const UserMenu = () => {
                         <AvatarFallback>
                             {session?.user?.email?.charAt(0).toUpperCase()}
                         </AvatarFallback>
-                    </Avatar>
+                    </Avatar> */}
+                    hey
                     <img />
                 </Button>
             </DropdownMenuTrigger>
@@ -51,7 +55,7 @@ export const UserMenu = () => {
                 <DropdownMenuItem>Settings</DropdownMenuItem>
                 <DropdownMenuItem>Support</DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={signOut}>Logout</DropdownMenuItem>
+                <DropdownMenuItem onClick={handleSignOut}>Logout</DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
     )

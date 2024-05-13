@@ -1,5 +1,7 @@
 import { RouterProvider, createBrowserRouter } from 'react-router-dom'
 
+import LoginPage from './pages/login-page'
+import { RequireAuth } from './providers/require-auth'
 import { Layout } from '@/components/layout/layout'
 import { routes } from '@/config/routes'
 import ErrorPage from '@/pages/error-page'
@@ -14,7 +16,15 @@ export const App = () => {
             children: [
                 {
                     index: true,
-                    element: <HomePage />
+                    element: (
+                        <RequireAuth>
+                            <HomePage />
+                        </RequireAuth>
+                    )
+                },
+                {
+                    element: <LoginPage />,
+                    path: routes.login
                 }
             ]
         },

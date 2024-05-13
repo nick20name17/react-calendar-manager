@@ -1,4 +1,4 @@
-import { api } from '.'
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 
 import type {
     EventDataToRemove,
@@ -8,7 +8,22 @@ import type {
     SingleEventResponse
 } from '@/types/google-events'
 
-export const google = api.injectEndpoints({
+const baseQuery = fetchBaseQuery({
+    prepareHeaders: (headers) => {
+        const sessionFromLocalStorage = localStorage.getItem('accessGoogleToken')
+
+        const session = JSON.parse(sessionFromLocalStorage || '{}')
+
+        if (session?.accessToken && session?.accessToken !== null) {
+            headers.set('authorization', `Bearer ${session?.accessToken}`)
+        }
+        return headers
+    }
+})
+
+export const googleApi = createApi({
+    reducerPath: 'googleApi',
+    baseQuery,
     endpoints: (build) => ({
         getGoogleEvents: build.query<EventResponse, string>({
             query: (calendarId) =>
@@ -38,7 +53,8 @@ export const google = api.injectEndpoints({
             }),
             invalidatesTags: ['GoogleEvents']
         })
-    })
+    }),
+    tagTypes: ['GoogleEvents']
 })
 
 export const {
@@ -46,4 +62,4 @@ export const {
     useAddGoogleEventMutation,
     usePatchGoogleEventMutation,
     useRemoveGoogleEventMutation
-} = google
+} = googleApi

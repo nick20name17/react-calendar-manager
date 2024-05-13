@@ -1,22 +1,12 @@
-import { useSession, useSessionContext } from '@supabase/auth-helpers-react'
-
-import { Login } from '@/components/auth/login'
 import { Calendar } from '@/components/home/calendar'
+import { Header } from '@/components/layout/header'
 
 const HomePage = () => {
-    const session = useSession()
-
-    const { isLoading } = useSessionContext()
-
-    if (isLoading) return
-
-    return session ? (
+    return (
         <>
-            {/* <Login /> */}
+            <Header />
             <Calendar />
         </>
-    ) : (
-        <Login />
     )
 }
 

@@ -1,4 +1,3 @@
-import { useSession } from '@supabase/auth-helpers-react'
 import { Trash2 } from 'lucide-react'
 import React from 'react'
 import { toast } from 'sonner'
@@ -14,6 +13,7 @@ import {
     AlertDialogTrigger
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
+import { UserAuth } from '@/providers/auth-context'
 import { useRemoveGoogleEventMutation } from '@/store/api/google'
 import { useRemoveOutlookEventMutation } from '@/store/api/outlook'
 import type { EventItem } from '@/types/google-events'
@@ -26,13 +26,13 @@ export const RemoveEventModal: React.FC<RemoveEventModalProps> = ({ event }) => 
     const [removeGoogleEvent] = useRemoveGoogleEventMutation()
     const [removeOutlookEvent] = useRemoveOutlookEventMutation()
 
-    const session = useSession()
+    const { user } = UserAuth()!
 
     const handleRemoveGoogleEvent = async () => {
         try {
             await removeGoogleEvent({
                 eventId: event.id,
-                calendarId: session?.user?.email!
+                calendarId: user?.email!
             })
                 .unwrap()
                 .then(() => {
@@ -58,7 +58,7 @@ export const RemoveEventModal: React.FC<RemoveEventModalProps> = ({ event }) => 
     const handleRemove = () => {
         if (event.originLinks.google) {
             handleRemoveGoogleEvent()
-        } else if (event.originLinks.google) {
+        } else if (event.originLinks.outlook) {
             handleRemoveOutlookEvent()
         }
     }
