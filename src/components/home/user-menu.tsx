@@ -1,5 +1,6 @@
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar'
 import { Button } from '../ui/button'
 
 import {
@@ -10,11 +11,18 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
+import { routes } from '@/config/routes'
 import { UserAuth } from '@/providers/auth-context'
 
 export const UserMenu = () => {
     const { logOut } = UserAuth()!
     const navigate = useNavigate()
+
+    const session =
+        localStorage.getItem('accessGoogleToken') ||
+        localStorage.getItem('accessOutlookToken')
+
+    const { user } = JSON.parse(session || '{}') as any
 
     const handleSignOut = () => {
         localStorage.clear()
@@ -29,12 +37,12 @@ export const UserMenu = () => {
                     className='overflow-hidden rounded-full'
                     size='icon'
                     variant='outline'>
-                    {/* <Avatar>
+                    <Avatar>
                         <AvatarImage
-                            alt={session?.user?.email || 'User'}
+                            alt={user?.email || 'User'}
                             className='overflow-hidden rounded-full'
                             height={36}
-                            src={session?.user?.user_metadata.avatar_url}
+                            src={user?.photoURL}
                             style={{
                                 aspectRatio: '36/36',
                                 objectFit: 'cover'
@@ -42,18 +50,18 @@ export const UserMenu = () => {
                             width={36}
                         />
                         <AvatarFallback>
-                            {session?.user?.email?.charAt(0).toUpperCase()}
+                            {user?.email?.charAt(0).toUpperCase()}
                         </AvatarFallback>
-                    </Avatar> */}
-                    hey
+                    </Avatar>
                     <img />
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align='end'>
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>Settings</DropdownMenuItem>
-                <DropdownMenuItem>Support</DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                    <Link to={routes.login}>Link new provider</Link>
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut}>Logout</DropdownMenuItem>
             </DropdownMenuContent>

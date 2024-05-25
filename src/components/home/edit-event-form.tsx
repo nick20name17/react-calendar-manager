@@ -7,13 +7,17 @@ import { toast } from 'sonner'
 import { z } from 'zod'
 
 import { Button } from '../ui/button'
+import { Checkbox } from '../ui/checkbox'
 import { Input } from '../ui/input'
 
 import { DateTimePicker } from './datetime/datetime-picker'
 import { RemoveEventModal } from './modals/remove-event'
+import googleIcon from '@/assets/img/google.webp'
+import outlookIcon from '@/assets/img/microsoft.png'
 import {
     Form,
     FormControl,
+    FormDescription,
     FormField,
     FormItem,
     FormLabel,
@@ -38,8 +42,6 @@ interface EventFormProps extends EventItem {
 export const EditEventForm: React.FC<EventFormProps> = ({ setOpen, ...event }) => {
     const { start, title, end, description, id } = event
 
-    console.log(event)
-
     const sessionFromLocalStorage = localStorage.getItem('accessGoogleToken')
 
     const { user } = JSON.parse(sessionFromLocalStorage || '{}') as any
@@ -61,16 +63,17 @@ export const EditEventForm: React.FC<EventFormProps> = ({ setOpen, ...event }) =
                 new Date(end).getHours(),
                 new Date(end).getMinutes()
             ),
+            providers: [],
             summary: title,
             description: description
         }
     })
 
-    const [addEvent] = usePatchGoogleEventMutation()
+    const [patchGoogleEvent] = usePatchGoogleEventMutation()
 
-    const editEvent = async (event: EventItemToAdd) => {
+    const editGoogleEvent = async (event: EventItemToAdd) => {
         try {
-            await addEvent({
+            await patchGoogleEvent({
                 eventId: id,
                 calendarId: user?.email!,
                 ...event
@@ -109,23 +112,24 @@ export const EditEventForm: React.FC<EventFormProps> = ({ setOpen, ...event }) =
             }
         }
 
-        editEvent(event)
+        if (data.providers.includes('google')) editGoogleEvent(event)
     }
 
-    // const providers = [
-    //     {
-    //         id: 'google',
-    //         label: 'Google'
-    //     },
-    //     {
-    //         id: 'apple',
-    //         label: 'Apple'
-    //     },
-    //     {
-    //         id: 'microsoft',
-    //         label: 'Microsoft'
-    //     }
-    // ] as const
+    const isGoogle = !!localStorage.getItem('accessGoogleToken')
+    const isOutlook = !!localStorage.getItem('accessOutlookToken')
+
+    const providers = [
+        {
+            id: 'google',
+            label: 'Google',
+            disabled: !isGoogle
+        },
+        {
+            id: 'outlook',
+            label: 'Outlook',
+            disabled: !isOutlook
+        }
+    ] as const
 
     return (
         <Form {...form}>
@@ -137,7 +141,7 @@ export const EditEventForm: React.FC<EventFormProps> = ({ setOpen, ...event }) =
                         <FormItem>
                             <FormLabel>Event Title</FormLabel>
                             <FormControl>
-                                <Input placeholder='shave teeth' {...field} />
+                                <Input placeholder='Do homework' {...field} />
                             </FormControl>
 
                             <FormMessage />
@@ -151,7 +155,7 @@ export const EditEventForm: React.FC<EventFormProps> = ({ setOpen, ...event }) =
                         <FormItem>
                             <FormLabel>Event Description</FormLabel>
                             <FormControl>
-                                <Input placeholder='shave teeth' {...field} />
+                                <Input placeholder='Do homework' {...field} />
                             </FormControl>
 
                             <FormMessage />
@@ -189,11 +193,11 @@ export const EditEventForm: React.FC<EventFormProps> = ({ setOpen, ...event }) =
                     )}
                 />
 
-                {/* <FormField
+                <FormField
                     control={form.control}
                     name='providers'
                     render={() => (
-                        <FormItem>
+                        <>
                             <div className='mb-4'>
                                 <FormLabel className='text-base'>Providers</FormLabel>
                                 <FormDescription>
@@ -203,6 +207,7 @@ export const EditEventForm: React.FC<EventFormProps> = ({ setOpen, ...event }) =
                             {providers.map((item) => (
                                 <FormField
                                     key={item.id}
+                                    disabled={true}
                                     control={form.control}
                                     name='providers'
                                     render={({ field }) => {
@@ -212,6 +217,7 @@ export const EditEventForm: React.FC<EventFormProps> = ({ setOpen, ...event }) =
                                                 className='flex flex-row items-start space-x-3 space-y-0'>
                                                 <FormControl>
                                                     <Checkbox
+                                                        disabled={item.disabled}
                                                         checked={field.value?.includes(
                                                             item.id
                                                         )}
@@ -231,18 +237,33 @@ export const EditEventForm: React.FC<EventFormProps> = ({ setOpen, ...event }) =
                                                         }}
                                                     />
                                                 </FormControl>
-                                                <FormLabel className='font-normal'>
-                                                    {item.label}
-                                                </FormLabel>
+                                                <TooltipProvider>
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <FormLabel className='font-normal'>
+                                                                {item.label}
+                                                            </FormLabel>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            {item.disabled ? (
+                                                                <span className='text-gray-500'>
+                                                                    You need to sign in to{' '}
+                                                                    {item.label} to use
+                                                                    this provider{' '}
+                                                                </span>
+                                                            ) : null}
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                </TooltipProvider>
                                             </FormItem>
                                         )
                                     }}
                                 />
                             ))}
                             <FormMessage />
-                        </FormItem>
+                        </>
                     )}
-                /> */}
+                />
 
                 <div className='flex items-center gap-x-4'>
                     <Button className='flex-1' type='submit'>
@@ -263,7 +284,11 @@ export const EditEventForm: React.FC<EventFormProps> = ({ setOpen, ...event }) =
                                     <Link
                                         to={event.originLinks?.outlook!}
                                         target='_blank'>
-                                        Out
+                                        <img
+                                            className='h-4 w-4'
+                                            src={outlookIcon}
+                                            alt='Outlook'
+                                        />
                                     </Link>
                                 </Button>
                             </TooltipTrigger>
@@ -279,7 +304,11 @@ export const EditEventForm: React.FC<EventFormProps> = ({ setOpen, ...event }) =
                             <TooltipTrigger>
                                 <Button disabled={!event.originLinks?.google} size='icon'>
                                     <Link to={event.originLinks?.google!} target='_blank'>
-                                        Goo
+                                        <img
+                                            className=' h-6 w-6'
+                                            src={googleIcon}
+                                            alt='Google'
+                                        />
                                     </Link>
                                 </Button>
                             </TooltipTrigger>

@@ -44,6 +44,44 @@ export const AuthContextProvider: React.FC<PropsWithChildren> = ({ children }) =
         }
     }, [])
 
+    const refreshAccessToken = async () => {
+        const refreshToken = JSON.parse(localStorage.getItem('accessGoogleToken') || '{}')
+            .user.stsTokenManager.refreshToken
+
+        if (!refreshToken) return
+        try {
+            const response = await fetch(
+                'https://securetoken.googleapis.com/v1/token?key=AIzaSyDZri9e6nuYMw4KrVAiUL3ecz605_Zs9DA',
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        // client_id:
+                        //     '948636653373-vgesuvqddsd6au964m4da588s13fc235.apps.googleusercontent.com',
+                        // client_secret: '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',
+                        refresh_token: refreshToken,
+                        grant_type: 'refresh_token'
+                    })
+                }
+            )
+            if (!response.ok) {
+                throw new Error('Failed to refresh token')
+            }
+            const data = await response.json()
+            console.log(data)
+        } catch (error) {
+            console.error('Error refreshing access token:', error)
+        }
+    }
+
+    useEffect(() => {
+        // Оновлюємо токен кожну годину
+        const interval = setInterval(refreshAccessToken, 300000)
+
+        // Очищаємо інтервал при розмонтаженні компонента
+        return () => clearInterval(interval)
+    }, [user])
+
     return (
         <AuthContext.Provider value={{ googleSignIn, logOut, user }}>
             {children}

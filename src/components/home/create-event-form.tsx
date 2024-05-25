@@ -13,11 +13,18 @@ import { DateTimePicker } from './datetime/datetime-picker'
 import {
     Form,
     FormControl,
+    FormDescription,
     FormField,
     FormItem,
     FormLabel,
     FormMessage
 } from '@/components/ui/form'
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger
+} from '@/components/ui/tooltip'
 import { calendarSchema, eventSchema } from '@/config/schemas'
 import { useAddGoogleEventMutation } from '@/store/api/google'
 import { useAddOutlookEventMutation } from '@/store/api/outlook'
@@ -31,6 +38,8 @@ interface EventFormProps {
     setOpen: React.Dispatch<React.SetStateAction<boolean>>
 }
 export const CreateEventForm: React.FC<EventFormProps> = ({ date, setOpen }) => {
+    // const currentHourPlusOne = new Date().setHours(new Date().getHours() + 1)
+
     const form = useForm<EventData>({
         resolver: zodResolver(eventSchema),
         defaultValues: {
@@ -40,7 +49,8 @@ export const CreateEventForm: React.FC<EventFormProps> = ({ date, setOpen }) => 
                 date.getDate(),
                 new Date().getHours(),
                 new Date().getMinutes()
-            )
+            ),
+            providers: []
         }
     })
 
@@ -119,19 +129,23 @@ export const CreateEventForm: React.FC<EventFormProps> = ({ date, setOpen }) => 
             }
         }
 
-        if (data.isGoogleProvider) createGoogleEvent(event)
-
-        if (data.isOutlookProvider) createOutlookEvent(event)
+        if (data.providers.includes('google')) createGoogleEvent(event)
+        if (data.providers.includes('outlook')) createOutlookEvent(event)
     }
+
+    const isGoogle = !!localStorage.getItem('accessGoogleToken')
+    const isOutlook = !!localStorage.getItem('accessOutlookToken')
 
     const providers = [
         {
             id: 'google',
-            label: 'Google'
+            label: 'Google',
+            disabled: !isGoogle
         },
         {
-            id: 'microsoft',
-            label: 'Microsoft'
+            id: 'outlook',
+            label: 'Outlook',
+            disabled: !isOutlook
         }
     ] as const
 
@@ -145,7 +159,7 @@ export const CreateEventForm: React.FC<EventFormProps> = ({ date, setOpen }) => 
                         <FormItem>
                             <FormLabel>Event Title</FormLabel>
                             <FormControl>
-                                <Input placeholder='shave teeth' {...field} />
+                                <Input placeholder='Do homework' {...field} />
                             </FormControl>
 
                             <FormMessage />
@@ -159,7 +173,7 @@ export const CreateEventForm: React.FC<EventFormProps> = ({ date, setOpen }) => 
                         <FormItem>
                             <FormLabel>Event Description</FormLabel>
                             <FormControl>
-                                <Input placeholder='shave teeth' {...field} />
+                                <Input placeholder='Do homework' {...field} />
                             </FormControl>
 
                             <FormMessage />
@@ -199,41 +213,6 @@ export const CreateEventForm: React.FC<EventFormProps> = ({ date, setOpen }) => 
 
                 <FormField
                     control={form.control}
-                    name='isGoogleProvider'
-                    render={({ field }) => (
-                        <FormItem className='flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4'>
-                            <FormControl>
-                                <Checkbox
-                                    checked={field.value}
-                                    onCheckedChange={field.onChange}
-                                />
-                            </FormControl>
-                            <div className='space-y-1 leading-none'>
-                                <FormLabel>Add to google calendar</FormLabel>
-                            </div>
-                        </FormItem>
-                    )}
-                />
-                <FormField
-                    control={form.control}
-                    name='isOutlookProvider'
-                    render={({ field }) => (
-                        <FormItem className='flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4'>
-                            <FormControl>
-                                <Checkbox
-                                    checked={field.value}
-                                    onCheckedChange={field.onChange}
-                                />
-                            </FormControl>
-                            <div className='space-y-1 leading-none'>
-                                <FormLabel>Add to my outlook calendar</FormLabel>
-                            </div>
-                        </FormItem>
-                    )}
-                />
-
-                {/* <FormField
-                    control={form.control}
                     name='providers'
                     render={() => (
                         <>
@@ -255,6 +234,7 @@ export const CreateEventForm: React.FC<EventFormProps> = ({ date, setOpen }) => 
                                                 className='flex flex-row items-start space-x-3 space-y-0'>
                                                 <FormControl>
                                                     <Checkbox
+                                                        disabled={item.disabled}
                                                         checked={field.value?.includes(
                                                             item.id
                                                         )}
@@ -274,9 +254,24 @@ export const CreateEventForm: React.FC<EventFormProps> = ({ date, setOpen }) => 
                                                         }}
                                                     />
                                                 </FormControl>
-                                                <FormLabel className='font-normal'>
-                                                    {item.label}
-                                                </FormLabel>
+                                                <TooltipProvider>
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <FormLabel className='font-normal'>
+                                                                {item.label}
+                                                            </FormLabel>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            {item.disabled ? (
+                                                                <span className='text-gray-500'>
+                                                                    You need to sign in to{' '}
+                                                                    {item.label} to use
+                                                                    this provider{' '}
+                                                                </span>
+                                                            ) : null}
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                </TooltipProvider>
                                             </FormItem>
                                         )
                                     }}
@@ -285,9 +280,9 @@ export const CreateEventForm: React.FC<EventFormProps> = ({ date, setOpen }) => 
                             <FormMessage />
                         </>
                     )}
-                /> */}
+                />
 
-                <Button type='submit'>Set event</Button>
+                <Button type='submit'>Create event</Button>
             </form>
         </Form>
     )
