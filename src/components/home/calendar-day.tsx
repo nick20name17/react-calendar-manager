@@ -30,7 +30,7 @@ export const CalendarDay: React.FC<EventDialogProps> = ({
             <DialogTrigger asChild>
                 <button
                     className={cn(
-                        'flex flex-col justify-between flex-1 rounded-sm border p-3 gap-y-2 h-[106px]',
+                        'flex flex-col justify-between flex-1 rounded-sm min-w-[187px] border p-3 gap-y-2 h-[106px]',
                         isToday(date) && 'border-primary',
                         !isSameMonth(date, firstDayCurrentMonth) && 'opacity-50'
                     )}>

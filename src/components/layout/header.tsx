@@ -1,10 +1,17 @@
 import { Link } from 'react-router-dom'
 
+import { Button } from '../ui/button'
+
+import googleIcon from '@/assets/img/google.webp'
+import outlookIcon from '@/assets/img/microsoft.png'
 import { UserMenu } from '@/components/home/user-menu'
 import { ModeToggle } from '@/components/mode-toggle'
 import { routes } from '@/config/routes'
 
 export const Header = () => {
+    const isGoogle = !!localStorage.getItem('accessGoogleToken')
+    const isOutlook = !!localStorage.getItem('accessOutlookToken')
+
     return (
         <header className='p-4 border-b border-slate-500 flex items-center justify-between'>
             <Link to={routes.home}>
@@ -57,9 +64,27 @@ export const Header = () => {
                     />
                 </svg>
             </Link>
-            <div className='flex items-center gap-x-4'>
-                <ModeToggle />
-                <UserMenu />
+
+            <div className='flex items-center gap-x-10'>
+                <div className='flex items-center gap-x-2'>
+                    <span className='text-sm text-foreground/40'>
+                        You currently logged in with:{' '}
+                    </span>
+                    {isGoogle ? (
+                        <Button variant='outline' size='icon'>
+                            <img className='h-6 w-6' src={googleIcon} alt='Google' />
+                        </Button>
+                    ) : null}
+                    {isOutlook ? (
+                        <Button variant='outline' size='icon'>
+                            <img className='h-6 w-6' src={outlookIcon} alt='Outlook' />
+                        </Button>
+                    ) : null}
+                </div>
+                <div className='flex items-center gap-x-4'>
+                    <ModeToggle />
+                    <UserMenu />
+                </div>
             </div>
         </header>
     )

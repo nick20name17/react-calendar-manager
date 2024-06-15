@@ -31,7 +31,7 @@ export const RemoveEventModal: React.FC<RemoveEventModalProps> = ({ event }) => 
     const handleRemoveGoogleEvent = async () => {
         try {
             await removeGoogleEvent({
-                eventId: event.id,
+                eventId: event.googleEventId!,
                 calendarId: user?.email!
             })
                 .unwrap()
@@ -45,7 +45,7 @@ export const RemoveEventModal: React.FC<RemoveEventModalProps> = ({ event }) => 
 
     const handleRemoveOutlookEvent = async () => {
         try {
-            await removeOutlookEvent(event.id)
+            await removeOutlookEvent(event.outlookEventId!)
                 .unwrap()
                 .then(() => {
                     toast.success('Event deleted successfully')
@@ -58,7 +58,9 @@ export const RemoveEventModal: React.FC<RemoveEventModalProps> = ({ event }) => 
     const handleRemove = () => {
         if (event.originLinks.google) {
             handleRemoveGoogleEvent()
-        } else if (event.originLinks.outlook) {
+        }
+
+        if (event.originLinks.outlook) {
             handleRemoveOutlookEvent()
         }
     }

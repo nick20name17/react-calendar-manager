@@ -17,7 +17,8 @@ export interface DefaultReminder {
 }
 
 export interface EventItem {
-    id: string
+    googleEventId?: string
+    outlookEventId?: string
     title: string
     start: string
     end: string

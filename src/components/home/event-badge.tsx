@@ -48,7 +48,10 @@ export const EventBadge: React.FC<EventBadgeProps> = ({ events, date }) => {
                     <div className='flex flex-col gap-y-2'>
                         {events?.map((event) => {
                             return (
-                                <Dialog key={event.id} open={open} onOpenChange={setOpen}>
+                                <Dialog
+                                    key={`${event.googleEventId} ${event.outlookEventId}`}
+                                    open={open}
+                                    onOpenChange={setOpen}>
                                     <DialogTrigger asChild>
                                         <Button
                                             variant='secondary'

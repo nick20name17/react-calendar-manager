@@ -31,6 +31,7 @@ import {
 } from '@/components/ui/tooltip'
 import { calendarSchema, eventSchema } from '@/config/schemas'
 import { usePatchGoogleEventMutation } from '@/store/api/google'
+import { usePatchOutlookEventMutation } from '@/store/api/outlook'
 import type { EventItem, EventItemToAdd } from '@/types/google-events'
 
 export type EventData = z.infer<typeof eventSchema>
@@ -40,7 +41,7 @@ interface EventFormProps extends EventItem {
     setOpen: React.Dispatch<React.SetStateAction<boolean>>
 }
 export const EditEventForm: React.FC<EventFormProps> = ({ setOpen, ...event }) => {
-    const { start, title, end, description, id } = event
+    const { start, title, end, description, googleEventId, outlookEventId } = event
 
     const sessionFromLocalStorage = localStorage.getItem('accessGoogleToken')
 
@@ -70,11 +71,12 @@ export const EditEventForm: React.FC<EventFormProps> = ({ setOpen, ...event }) =
     })
 
     const [patchGoogleEvent] = usePatchGoogleEventMutation()
+    const [patchOutlookEvent] = usePatchOutlookEventMutation()
 
     const editGoogleEvent = async (event: EventItemToAdd) => {
         try {
             await patchGoogleEvent({
-                eventId: id,
+                eventId: googleEventId!,
                 calendarId: user?.email!,
                 ...event
             })
@@ -84,6 +86,41 @@ export const EditEventForm: React.FC<EventFormProps> = ({ setOpen, ...event }) =
                     toast.success(`Event ${data.summary} created successfully`, {
                         description: `Event starts at ${format(data.start.dateTime, 'dd.MM.yyyy HH:mm')}, ends at ${format(data.end.dateTime, 'dd.MM.yyyy HH:mm')}`
                     })
+                })
+        } catch (error) {}
+    }
+
+    const editOutlookEvent = async (event: EventItemToAdd) => {
+        const eventToAdd = {
+            subject: event.summary,
+            body: {
+                contentType: 'HTML',
+                content: event.description || ''
+            },
+            start: {
+                dateTime: event.start.dateTime,
+                timeZone: event.start.timeZone
+            },
+            end: {
+                dateTime: event.end.dateTime,
+                timeZone: event.end.timeZone
+            }
+        }
+
+        try {
+            await patchOutlookEvent({
+                id: outlookEventId!,
+                ...eventToAdd
+            })
+                .unwrap()
+                .then((data) => {
+                    setOpen(false)
+                    toast.success(
+                        `Event ${data.subject} in Outlook created successfully`,
+                        {
+                            description: `Event starts at ${format(data.start.dateTime, 'dd.MM.yyyy HH:mm')}, ends at ${format(data.end.dateTime, 'dd.MM.yyyy HH:mm')}`
+                        }
+                    )
                 })
         } catch (error) {}
     }
@@ -113,21 +150,19 @@ export const EditEventForm: React.FC<EventFormProps> = ({ setOpen, ...event }) =
         }
 
         if (data.providers.includes('google')) editGoogleEvent(event)
+        if (data.providers.includes('outlook')) editOutlookEvent(event)
     }
-
-    const isGoogle = !!localStorage.getItem('accessGoogleToken')
-    const isOutlook = !!localStorage.getItem('accessOutlookToken')
 
     const providers = [
         {
             id: 'google',
             label: 'Google',
-            disabled: !isGoogle
+            disabled: !!event.originLinks.google
         },
         {
             id: 'outlook',
             label: 'Outlook',
-            disabled: !isOutlook
+            disabled: !!event.originLinks.outlook
         }
     ] as const
 
@@ -207,7 +242,6 @@ export const EditEventForm: React.FC<EventFormProps> = ({ setOpen, ...event }) =
                             {providers.map((item) => (
                                 <FormField
                                     key={item.id}
-                                    disabled={true}
                                     control={form.control}
                                     name='providers'
                                     render={({ field }) => {
@@ -217,7 +251,7 @@ export const EditEventForm: React.FC<EventFormProps> = ({ setOpen, ...event }) =
                                                 className='flex flex-row items-start space-x-3 space-y-0'>
                                                 <FormControl>
                                                     <Checkbox
-                                                        disabled={item.disabled}
+                                                        disabled={!item.disabled}
                                                         checked={field.value?.includes(
                                                             item.id
                                                         )}
@@ -245,7 +279,7 @@ export const EditEventForm: React.FC<EventFormProps> = ({ setOpen, ...event }) =
                                                             </FormLabel>
                                                         </TooltipTrigger>
                                                         <TooltipContent>
-                                                            {item.disabled ? (
+                                                            {!item.disabled ? (
                                                                 <span className='text-gray-500'>
                                                                     You need to sign in to{' '}
                                                                     {item.label} to use

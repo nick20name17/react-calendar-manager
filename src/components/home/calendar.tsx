@@ -4,6 +4,7 @@ import {
     endOfMonth,
     endOfWeek,
     format,
+    isEqual,
     parse,
     startOfToday,
     startOfWeek
@@ -27,10 +28,10 @@ export const Calendar = () => {
 
     const { data: outlookEvents } = useGetOutlookEventsQuery()
 
-    const outlookEventItems =
+    const outlookEventItems: EventItem[] =
         outlookEvents?.value?.map((event) => {
             return {
-                id: event.id,
+                outlookEventId: event.id,
                 title: event?.subject,
                 start: event?.start?.dateTime,
                 end: event?.end?.dateTime,
@@ -44,53 +45,61 @@ export const Calendar = () => {
     const googleEventItems =
         googleEvents?.items?.map((event) => {
             return {
-                id: event?.id,
+                googleEventId: event.id,
                 title: event?.summary,
                 start: event?.start?.dateTime,
                 end: event?.end?.dateTime,
-                description: event?.description,
+                description: event?.description ?? '',
                 originLinks: {
                     google: event?.htmlLink
                 }
             }
         }) ?? []
 
-    const isEventTheSame = (event1: EventItem, event2: EventItem) => {
-        return (
-            // event1.id === event2.id &&
-            event1.title === event2.title &&
-            // event1.start === event2.start &&
-            // event1.end === event2.end &&
-            event1.description === event2.description
-        )
-    }
-
-    const getEvents = () => {
+    const getEvents = (outlookEvents: EventItem[], googleEvents: EventItem[]) => {
         const combinedEvents: EventItem[] = []
-        const allEvents = [...outlookEventItems, ...googleEventItems]
+        const matchedGoogleEventIds = new Set()
 
-        allEvents.forEach((event) => {
-            const existingEvent = combinedEvents.find((combinedEvent) =>
-                isEventTheSame(combinedEvent, event)
-            )
+        outlookEvents.forEach((outlookEvent) => {
+            const googleEvent = googleEvents.find((googleEvent) => {
+                return (
+                    googleEvent.title === outlookEvent.title &&
+                    isEqual(googleEvent.start, outlookEvent.start) &&
+                    isEqual(googleEvent.end, outlookEvent.end) &&
+                    googleEvent.description === outlookEvent.description
+                )
+            })
 
-            if (existingEvent) {
-                existingEvent.start = event.start
-                existingEvent.end = event.end
-                existingEvent.description = event.description
-                existingEvent.originLinks = {
-                    ...existingEvent.originLinks,
-                    ...event.originLinks
+            if (googleEvent) {
+                const combinedEvent = {
+                    outlookEventId: outlookEvent.outlookEventId,
+                    googleEventId: googleEvent.googleEventId,
+                    title: outlookEvent.title,
+                    start: outlookEvent.start,
+                    end: outlookEvent.end,
+                    description: outlookEvent.description,
+                    originLinks: {
+                        outlook: outlookEvent.originLinks.outlook,
+                        google: googleEvent.originLinks.google
+                    }
                 }
+                combinedEvents.push(combinedEvent)
+                matchedGoogleEventIds.add(googleEvent.googleEventId)
             } else {
-                combinedEvents.push(event)
+                combinedEvents.push(outlookEvent)
+            }
+        })
+
+        googleEvents.forEach((googleEvent) => {
+            if (!matchedGoogleEventIds.has(googleEvent.googleEventId)) {
+                combinedEvents.push(googleEvent)
             }
         })
 
         return combinedEvents
     }
 
-    const events = getEvents()
+    const events = getEvents(outlookEventItems, googleEventItems)
 
     const today = startOfToday()
     const [currentMonth, setCurrentMonth] = useState(format(today, 'MMM yyyy'))
@@ -141,7 +150,7 @@ export const Calendar = () => {
                 </div>
             </div>
 
-            <div className='!w-full overflow-x-auto'>
+            <div className='!w-full !overflow-x-auto'>
                 <Weeks />
                 <Body
                     events={events}

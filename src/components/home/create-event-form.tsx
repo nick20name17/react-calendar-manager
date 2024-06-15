@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { CalendarDateTime } from '@internationalized/date'
-import { format } from 'date-fns'
+import { addHours, format, parseISO } from 'date-fns'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
@@ -38,8 +38,6 @@ interface EventFormProps {
     setOpen: React.Dispatch<React.SetStateAction<boolean>>
 }
 export const CreateEventForm: React.FC<EventFormProps> = ({ date, setOpen }) => {
-    // const currentHourPlusOne = new Date().setHours(new Date().getHours() + 1)
-
     const form = useForm<EventData>({
         resolver: zodResolver(eventSchema),
         defaultValues: {
@@ -56,6 +54,8 @@ export const CreateEventForm: React.FC<EventFormProps> = ({ date, setOpen }) => 
 
     const [addOutlookEvent] = useAddOutlookEventMutation()
     const [addGoogleEvent] = useAddGoogleEventMutation()
+
+    const getTimeZone = () => Intl.DateTimeFormat().resolvedOptions().timeZone
 
     const createOutlookEvent = async (event: EventItemToAdd) => {
         const eventToAdd = {
@@ -82,7 +82,7 @@ export const CreateEventForm: React.FC<EventFormProps> = ({ date, setOpen }) => 
                     toast.success(
                         `Event ${data.subject} in Outlook created successfully`,
                         {
-                            description: `Event starts at ${format(data.start.dateTime, 'dd.MM.yyyy HH:mm')}, ends at ${format(data.end.dateTime, 'dd.MM.yyyy HH:mm')}`
+                            description: `Event starts at ${format(parseISO(data.start.dateTime), 'dd.MM.yyyy HH:mm')}, ends at ${format(parseISO(data.end.dateTime), 'dd.MM.yyyy HH:mm')}`
                         }
                     )
                 })
@@ -98,39 +98,56 @@ export const CreateEventForm: React.FC<EventFormProps> = ({ date, setOpen }) => 
                     toast.success(
                         `Event ${data.summary} in Google Calendar created successfully`,
                         {
-                            description: `Event starts at ${format(data.start.dateTime, 'dd.MM.yyyy HH:mm')}, ends at ${format(data.end.dateTime, 'dd.MM.yyyy HH:mm')}`
+                            description: `Event starts at ${format(parseISO(data.start.dateTime), 'dd.MM.yyyy HH:mm')}, ends at ${format(parseISO(data.end.dateTime), 'dd.MM.yyyy HH:mm')}`
                         }
                     )
                 })
         } catch (error) {}
     }
 
-    const getFormattedDate = (value: DateTimeValue) =>
-        new Date(
+    const getFormattedDate = (value: DateTimeValue, addHoursOffset = 0) => {
+        const date = new Date(
             value.year,
             value.month - 1,
             value.day,
             value.hour,
             value.minute,
             value.second
-        ).toISOString()
+        )
+        return addHours(date, addHoursOffset).toISOString()
+    }
 
     const onSubmit = async (data: EventData) => {
-        const event = {
+        const timezone = getTimeZone()
+
+        const googleEvent = {
             summary: data.summary,
-            description: data.description,
+            description: data.description ?? '',
             start: {
                 dateTime: getFormattedDate(data.start),
-                timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+                timeZone: timezone
             },
             end: {
                 dateTime: getFormattedDate(data.end),
-                timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+                timeZone: timezone
             }
         }
 
-        if (data.providers.includes('google')) createGoogleEvent(event)
-        if (data.providers.includes('outlook')) createOutlookEvent(event)
+        const outlookEvent = {
+            summary: data.summary,
+            description: data.description,
+            start: {
+                dateTime: getFormattedDate(data.start, 3),
+                timeZone: timezone
+            },
+            end: {
+                dateTime: getFormattedDate(data.end, 3),
+                timeZone: timezone
+            }
+        }
+
+        if (data.providers.includes('google')) createGoogleEvent(googleEvent)
+        if (data.providers.includes('outlook')) createOutlookEvent(outlookEvent)
     }
 
     const isGoogle = !!localStorage.getItem('accessGoogleToken')
