@@ -1,4 +1,5 @@
 import { GoogleAuthProvider, OAuthProvider, signInWithPopup } from 'firebase/auth'
+import { ArrowLeft } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 import googleIcon from '@/assets/img/google.webp'
@@ -99,26 +100,49 @@ export const Login = () => {
         })
     }
 
+    const isGoogle = !!localStorage.getItem('accessGoogleToken')
+    const isOutlook = !!localStorage.getItem('accessOutlookToken')
+
     return (
-        <Card className='fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 max-w-sm'>
-            <CardHeader>
-                <CardTitle className='text-xl'>Sign In</CardTitle>
-                <CardDescription>
-                    Sign In with one of the following providers
-                </CardDescription>
-            </CardHeader>
-            <CardContent>
-                <div className='flex flex-col gap-y-2'>
-                    <Button className='w-full' onClick={handleAuthGoogle}>
-                        <img className='mr-2 h-6 w-6' src={googleIcon} alt='Google' />
-                        Sign In with Google
-                    </Button>
-                    <Button className='w-full' onClick={handleAuthOutlook}>
-                        <img className='mr-2 h-4 w-4' src={outlookIcon} alt='Outlook' />
-                        Sign In with Azure
-                    </Button>
-                </div>
-            </CardContent>
-        </Card>
+        <>
+            {isGoogle || isOutlook ? (
+                <Button
+                    onClick={() => navigate(-1)}
+                    className='fixed top-10 left-10'
+                    size='icon'>
+                    <ArrowLeft className='w-4 h-4' />
+                </Button>
+            ) : null}
+            <Card className='fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 max-w-sm'>
+                <CardHeader>
+                    <CardTitle className='text-xl'>Sign In</CardTitle>
+                    <CardDescription>
+                        Sign In with one of the following providers
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className='flex flex-col gap-y-2'>
+                        <Button
+                            disabled={isGoogle}
+                            className='w-full'
+                            onClick={handleAuthGoogle}>
+                            <img className='mr-2 h-6 w-6' src={googleIcon} alt='Google' />
+                            {isGoogle ? 'You already logged in' : 'Sign In with Google'}
+                        </Button>
+                        <Button
+                            disabled={isOutlook}
+                            className='w-full'
+                            onClick={handleAuthOutlook}>
+                            <img
+                                className='mr-2 h-6 w-6'
+                                src={outlookIcon}
+                                alt='Outlook'
+                            />
+                            {isOutlook ? 'You already logged in' : 'Sign In with Outlook'}
+                        </Button>
+                    </div>
+                </CardContent>
+            </Card>
+        </>
     )
 }
