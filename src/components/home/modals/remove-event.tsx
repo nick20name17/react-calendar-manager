@@ -13,7 +13,6 @@ import {
     AlertDialogTrigger
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
-import { UserAuth } from '@/providers/auth-context'
 import { useRemoveGoogleEventMutation } from '@/store/api/google'
 import { useRemoveOutlookEventMutation } from '@/store/api/outlook'
 import type { EventItem } from '@/types/google-events'
@@ -26,41 +25,43 @@ export const RemoveEventModal: React.FC<RemoveEventModalProps> = ({ event }) => 
     const [removeGoogleEvent] = useRemoveGoogleEventMutation()
     const [removeOutlookEvent] = useRemoveOutlookEventMutation()
 
-    const { user } = UserAuth()!
+    const googleUser = localStorage.getItem('accessGoogleToken')
+
+    const googleEmail = googleUser ? JSON.parse(googleUser).user.email : ''
 
     const handleRemoveGoogleEvent = async () => {
         try {
             await removeGoogleEvent({
-                eventId: event.googleEventId!,
-                calendarId: user?.email!
+                eventId: event?.googleEventId!,
+                calendarId: googleEmail
             })
                 .unwrap()
                 .then(() => {
                     toast.success('Event deleted successfully')
                 })
-        } catch (error) {
-            console.error(error)
+        } catch (error: any) {
+            toast.error(error.data.error.message)
         }
     }
 
     const handleRemoveOutlookEvent = async () => {
         try {
-            await removeOutlookEvent(event.outlookEventId!)
+            await removeOutlookEvent(event?.outlookEventId!)
                 .unwrap()
                 .then(() => {
                     toast.success('Event deleted successfully')
                 })
-        } catch (error) {
-            console.error(error)
+        } catch (error: any) {
+            toast.error(error.data.error.message || 'Something went wrong')
         }
     }
 
     const handleRemove = () => {
-        if (event.originLinks.google) {
+        if (event.originLinks?.google) {
             handleRemoveGoogleEvent()
         }
 
-        if (event.originLinks.outlook) {
+        if (event.originLinks?.outlook) {
             handleRemoveOutlookEvent()
         }
     }

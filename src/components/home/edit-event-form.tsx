@@ -82,7 +82,6 @@ export const EditEventForm: React.FC<EventFormProps> = ({ setOpen, ...event }) =
             })
                 .unwrap()
                 .then((data) => {
-                    setOpen(false)
                     toast.success(`Event ${data.summary} created successfully`, {
                         description: `Event starts at ${format(data.start.dateTime, 'dd.MM.yyyy HH:mm')}, ends at ${format(data.end.dateTime, 'dd.MM.yyyy HH:mm')}`
                     })
@@ -114,7 +113,6 @@ export const EditEventForm: React.FC<EventFormProps> = ({ setOpen, ...event }) =
             })
                 .unwrap()
                 .then((data) => {
-                    setOpen(false)
                     toast.success(
                         `Event ${data.subject} in Outlook created successfully`,
                         {
@@ -136,6 +134,8 @@ export const EditEventForm: React.FC<EventFormProps> = ({ setOpen, ...event }) =
         ).toISOString()
 
     const onSubmit = async (data: EventData) => {
+        setOpen(false)
+
         const event = {
             summary: data.summary,
             description: data.description,

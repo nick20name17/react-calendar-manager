@@ -5,7 +5,6 @@ import { Button } from '../ui/button'
 import googleIcon from '@/assets/img/google.webp'
 import outlookIcon from '@/assets/img/microsoft.png'
 import { UserMenu } from '@/components/home/user-menu'
-import { ModeToggle } from '@/components/mode-toggle'
 import { routes } from '@/config/routes'
 
 export const Header = () => {
@@ -82,7 +81,6 @@ export const Header = () => {
                     ) : null}
                 </div>
                 <div className='flex items-center gap-x-4'>
-                    <ModeToggle />
                     <UserMenu />
                 </div>
             </div>

@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button'
 import { useGetGoogleEventsQuery } from '@/store/api/google'
 import { useGetOutlookEventsQuery } from '@/store/api/outlook'
 import type { EventItem } from '@/types/google-events'
+import { getBodyText } from '@/utils'
 
 export const Calendar = () => {
     const goggleSession = localStorage.getItem('accessGoogleToken')
@@ -35,7 +36,7 @@ export const Calendar = () => {
                 title: event?.subject,
                 start: event?.start?.dateTime,
                 end: event?.end?.dateTime,
-                description: event?.body?.content,
+                description: getBodyText(event?.body?.content),
                 originLinks: {
                     outlook: event?.webLink
                 }

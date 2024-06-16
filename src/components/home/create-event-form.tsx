@@ -55,8 +55,6 @@ export const CreateEventForm: React.FC<EventFormProps> = ({ date, setOpen }) => 
     const [addOutlookEvent] = useAddOutlookEventMutation()
     const [addGoogleEvent] = useAddGoogleEventMutation()
 
-    const getTimeZone = () => Intl.DateTimeFormat().resolvedOptions().timeZone
-
     const createOutlookEvent = async (event: EventItemToAdd) => {
         const eventToAdd = {
             subject: event.summary,
@@ -86,7 +84,9 @@ export const CreateEventForm: React.FC<EventFormProps> = ({ date, setOpen }) => 
                         }
                     )
                 })
-        } catch (error) {}
+        } catch (error: any) {
+            toast.error(error.data.error.message)
+        }
     }
 
     const createGoogleEvent = async (event: EventItemToAdd) => {
@@ -102,7 +102,9 @@ export const CreateEventForm: React.FC<EventFormProps> = ({ date, setOpen }) => 
                         }
                     )
                 })
-        } catch (error) {}
+        } catch (error: any) {
+            toast.error(error.data.error.message)
+        }
     }
 
     const getFormattedDate = (value: DateTimeValue, addHoursOffset = 0) => {
@@ -118,18 +120,16 @@ export const CreateEventForm: React.FC<EventFormProps> = ({ date, setOpen }) => 
     }
 
     const onSubmit = async (data: EventData) => {
-        const timezone = getTimeZone()
-
         const googleEvent = {
             summary: data.summary,
             description: data.description ?? '',
             start: {
                 dateTime: getFormattedDate(data.start),
-                timeZone: timezone
+                timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
             },
             end: {
                 dateTime: getFormattedDate(data.end),
-                timeZone: timezone
+                timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
             }
         }
 
@@ -138,11 +138,11 @@ export const CreateEventForm: React.FC<EventFormProps> = ({ date, setOpen }) => 
             description: data.description,
             start: {
                 dateTime: getFormattedDate(data.start, 3),
-                timeZone: timezone
+                timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
             },
             end: {
                 dateTime: getFormattedDate(data.end, 3),
-                timeZone: timezone
+                timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
             }
         }
 

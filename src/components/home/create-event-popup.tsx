@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { CalendarDateTime } from '@internationalized/date'
-import { format } from 'date-fns'
+import { addHours, format } from 'date-fns'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -85,7 +85,9 @@ export const CreateEventPopup: React.FC = () => {
                         }
                     )
                 })
-        } catch (error) {}
+        } catch (error: any) {
+            toast.error(error.data.error.message)
+        }
     }
 
     const createGoogleEvent = async (event: EventItemToAdd) => {
@@ -101,23 +103,27 @@ export const CreateEventPopup: React.FC = () => {
                         }
                     )
                 })
-        } catch (error) {}
+        } catch (error: any) {
+            toast.error(error.data.error.message)
+        }
     }
 
-    const getFormattedDate = (value: DateTimeValue) =>
-        new Date(
+    const getFormattedDate = (value: DateTimeValue, addHoursOffset = 0) => {
+        const date = new Date(
             value.year,
             value.month - 1,
             value.day,
             value.hour,
             value.minute,
             value.second
-        ).toISOString()
+        )
+        return addHours(date, addHoursOffset).toISOString()
+    }
 
     const onSubmit = async (data: EventData) => {
-        const event = {
+        const googleEvent = {
             summary: data.summary,
-            description: data.description,
+            description: data.description ?? '',
             start: {
                 dateTime: getFormattedDate(data.start),
                 timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
@@ -128,8 +134,21 @@ export const CreateEventPopup: React.FC = () => {
             }
         }
 
-        if (data.providers.includes('google')) createGoogleEvent(event)
-        if (data.providers.includes('outlook')) createOutlookEvent(event)
+        const outlookEvent = {
+            summary: data.summary,
+            description: data.description,
+            start: {
+                dateTime: getFormattedDate(data.start, 3),
+                timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+            },
+            end: {
+                dateTime: getFormattedDate(data.end, 3),
+                timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+            }
+        }
+
+        if (data.providers.includes('google')) createGoogleEvent(googleEvent)
+        if (data.providers.includes('outlook')) createOutlookEvent(outlookEvent)
     }
 
     const isGoogle = !localStorage.getItem('accessGoogleToken')

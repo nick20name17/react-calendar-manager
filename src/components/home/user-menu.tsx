@@ -1,5 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom'
 
+import { ThemeToggle } from '../mode-toggle'
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar'
 import { Button } from '../ui/button'
 
@@ -59,6 +60,7 @@ export const UserMenu = () => {
             <DropdownMenuContent align='end'>
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
+                <ThemeToggle />
                 <DropdownMenuItem asChild>
                     <Link to={routes.login}>Link new provider</Link>
                 </DropdownMenuItem>
