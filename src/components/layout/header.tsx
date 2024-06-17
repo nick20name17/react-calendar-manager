@@ -5,6 +5,12 @@ import { Button } from '../ui/button'
 import googleIcon from '@/assets/img/google.webp'
 import outlookIcon from '@/assets/img/microsoft.png'
 import { UserMenu } from '@/components/home/user-menu'
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger
+} from '@/components/ui/tooltip'
 import { routes } from '@/config/routes'
 
 export const Header = () => {
@@ -65,19 +71,45 @@ export const Header = () => {
             </Link>
 
             <div className='flex items-center gap-x-10'>
-                <div className='flex items-center gap-x-2'>
-                    <span className='text-sm text-foreground/40'>
+                <div className='flex items-center gap-x-2 '>
+                    <span className='text-sm text-foreground/40 max-[500px]:hidden'>
                         You currently logged in with:{' '}
                     </span>
                     {isGoogle ? (
-                        <Button variant='outline' size='icon'>
-                            <img className='h-6 w-6' src={googleIcon} alt='Google' />
-                        </Button>
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button variant='outline' size='icon'>
+                                        <img
+                                            className='h-6 w-6'
+                                            src={googleIcon}
+                                            alt='Google'
+                                        />
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>Google</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
                     ) : null}
                     {isOutlook ? (
-                        <Button variant='outline' size='icon'>
-                            <img className='h-6 w-6' src={outlookIcon} alt='Outlook' />
-                        </Button>
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button variant='outline' size='icon'>
+                                        <img
+                                            className='h-6 w-6'
+                                            src={outlookIcon}
+                                            alt='Outlook'
+                                        />
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>Outlook</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
                     ) : null}
                 </div>
                 <div className='flex items-center gap-x-4'>

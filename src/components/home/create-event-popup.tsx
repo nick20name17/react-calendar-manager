@@ -170,7 +170,7 @@ export const CreateEventPopup: React.FC = () => {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button>Create new event</Button>
+                <Button className='max-[420px]:flex-1'>Create new event</Button>
             </DialogTrigger>
             <DialogContent className='sm:max-w-[425px]'>
                 <DialogHeader>

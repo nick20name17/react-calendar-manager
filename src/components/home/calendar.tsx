@@ -129,9 +129,9 @@ export const Calendar = () => {
 
     return (
         <>
-            <div className='p-5 flex items-center justify-between gap-x-8'>
+            <div className='p-5 flex items-center justify-between gap-x-8 gap-y-4 flex-wrap'>
                 <CreateEventPopup />
-                <div className='flex items-center justify-center gap-x-4 '>
+                <div className='max-[420px]:justify-between max-[420px]:flex-1 flex items-center justify-center gap-x-4 '>
                     <Button
                         onClick={getPreviousMonth}
                         variant='outline'
