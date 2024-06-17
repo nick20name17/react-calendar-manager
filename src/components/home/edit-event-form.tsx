@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { CalendarDateTime } from '@internationalized/date'
-import { format } from 'date-fns'
+import { addHours, format } from 'date-fns'
 import { useForm } from 'react-hook-form'
 import { Link } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -123,22 +123,24 @@ export const EditEventForm: React.FC<EventFormProps> = ({ setOpen, ...event }) =
         } catch (error) {}
     }
 
-    const getFormattedDate = (value: DateTimeValue) =>
-        new Date(
+    const getFormattedDate = (value: DateTimeValue, addHoursOffset = 0) => {
+        const date = new Date(
             value.year,
             value.month - 1,
             value.day,
             value.hour,
             value.minute,
             value.second
-        ).toISOString()
+        )
+        return addHours(date, addHoursOffset).toISOString()
+    }
 
     const onSubmit = async (data: EventData) => {
         setOpen(false)
 
-        const event = {
+        const googleEvent = {
             summary: data.summary,
-            description: data.description,
+            description: data.description ?? '',
             start: {
                 dateTime: getFormattedDate(data.start),
                 timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
@@ -149,8 +151,21 @@ export const EditEventForm: React.FC<EventFormProps> = ({ setOpen, ...event }) =
             }
         }
 
-        if (data.providers.includes('google')) editGoogleEvent(event)
-        if (data.providers.includes('outlook')) editOutlookEvent(event)
+        const outlookEvent = {
+            summary: data.summary,
+            description: data.description,
+            start: {
+                dateTime: getFormattedDate(data.start, 3),
+                timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+            },
+            end: {
+                dateTime: getFormattedDate(data.end, 3),
+                timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+            }
+        }
+
+        if (data.providers.includes('google')) editGoogleEvent(googleEvent)
+        if (data.providers.includes('outlook')) editOutlookEvent(outlookEvent)
     }
 
     const providers = [
