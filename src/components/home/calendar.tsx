@@ -67,7 +67,8 @@ export const Calendar = () => {
                     googleEvent.title === outlookEvent.title &&
                     isEqual(googleEvent.start, outlookEvent.start) &&
                     isEqual(googleEvent.end, outlookEvent.end) &&
-                    googleEvent.description === outlookEvent.description
+                    googleEvent?.description?.trim() ===
+                        getBodyText(outlookEvent?.description!)?.trim()
                 )
             })
 

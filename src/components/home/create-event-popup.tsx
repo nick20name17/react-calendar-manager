@@ -77,7 +77,6 @@ export const CreateEventPopup: React.FC = () => {
             await addOutlookEvent(eventToAdd)
                 .unwrap()
                 .then((data) => {
-                    setOpen(false)
                     toast.success(
                         `Event ${data.subject} in Outlook created successfully`,
                         {
@@ -95,7 +94,6 @@ export const CreateEventPopup: React.FC = () => {
             await addGoogleEvent(event)
                 .unwrap()
                 .then((data) => {
-                    setOpen(false)
                     toast.success(
                         `Event ${data.summary} in Google Calendar created successfully`,
                         {
@@ -121,6 +119,8 @@ export const CreateEventPopup: React.FC = () => {
     }
 
     const onSubmit = async (data: EventData) => {
+        setOpen(false)
+
         const googleEvent = {
             summary: data.summary,
             description: data.description ?? '',

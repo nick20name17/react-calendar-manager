@@ -76,7 +76,6 @@ export const CreateEventForm: React.FC<EventFormProps> = ({ date, setOpen }) => 
             await addOutlookEvent(eventToAdd)
                 .unwrap()
                 .then((data) => {
-                    setOpen(false)
                     toast.success(
                         `Event ${data.subject} in Outlook created successfully`,
                         {
@@ -94,7 +93,6 @@ export const CreateEventForm: React.FC<EventFormProps> = ({ date, setOpen }) => 
             await addGoogleEvent(event)
                 .unwrap()
                 .then((data) => {
-                    setOpen(false)
                     toast.success(
                         `Event ${data.summary} in Google Calendar created successfully`,
                         {
@@ -120,6 +118,8 @@ export const CreateEventForm: React.FC<EventFormProps> = ({ date, setOpen }) => 
     }
 
     const onSubmit = async (data: EventData) => {
+        setOpen(false)
+
         const googleEvent = {
             summary: data.summary,
             description: data.description ?? '',
